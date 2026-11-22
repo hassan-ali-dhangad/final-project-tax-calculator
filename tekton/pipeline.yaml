@@ -9,7 +9,15 @@ spec:
   workspaces:
     - name: source
   tasks:
+    - name: npm-install
+      taskRef:
+        name: npm-install
+      workspaces:
+        - name: source
+          workspace: source
     - name: unit-tests
+      runAfter:
+        - npm-install
       taskRef:
         name: run-jasmine-tests
       workspaces:
