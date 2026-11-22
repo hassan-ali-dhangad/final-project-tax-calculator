@@ -1,0 +1,39 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: run-jasmine-tests
+spec:
+  workspaces:
+    - name: source
+  steps:
+    - name: npm-install
+      image: node:20-alpine
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/bin/sh
+        npm install
+    - name: jasmine-tests
+      image: node:20-alpine
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/bin/sh
+        npx jasmine
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build-and-push-image
+spec:
+  params:
+    - name: image-url
+      type: string
+  workspaces:
+    - name: source
+  steps:
+    - name: build-push
+      image: quay.io/buildah/stable
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/usr/bin/env bash
+        buildah bud -t $(params.image-url) .
+        buildah push $(params.image-url)
